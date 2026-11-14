@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura e Automação VPN IPsec - Mercado Livre Challenge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Socket.IO Client CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .markdown-body { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); margin-top: 20px; }
+        .markdown-body pre { background: #212529; color: #f8f9fa; padding: 15px; border-radius: 5px; }
+        .markdown-body code { color: #d63384; }
+        .markdown-body pre code { color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 fw-bold text-success">Parte 2: Automação e Arquitetura VPN IPsec</h1>
+                <p class="text-muted mb-0">Integração Multi-Vendor (FortiGate x Palo Alto)</p>
+            </div>
+            <div>
+                <a href="/" class="btn btn-outline-dark">🏠 Início</a>
+                <a href="/configure-page" class="btn btn-outline-primary">⚙️ Configuração</a>
+                <a href="/backups" class="btn btn-outline-secondary">💾 Backups</a>
+            </div>
+        </header>
+
+        <!-- Console de Execução em Tempo Real -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Console de Execução dos Firewalls (Tempo Real)</h5>
+                <span id="vpnStatusBadge" class="badge bg-secondary">Aguardando comando...</span>
+            </div>
+            <div class="card-body bg-black text-light font-monospace" id="vpnConsoleBox" style="height: 300px; overflow-y: auto; font-size: 0.85rem;">
+                <p class="text-muted mb-1">[System] Pronto para executar Deploy ou Rollback nos firewalls...</p>
+            </div>
+        </div>
+
+        <!-- Painéis de Controle de Automação (FortiGate & Palo Alto) -->
+        <div class="row g-4 mb-4">
+            <!-- FortiGate Controller -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">🛡️ FortiGate (FW-Fortigate - 192.168.0.251)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="formFortigate">
+                            <input type="hidden" id="fg_firewall" value="fortigate">
+                            <div class="mb-2">
+                                <label class="form-label small">IP / Host</label>
+                                <input type="text" class="form-control form-control-sm" id="fg_host" value="192.168.0.251" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Usuário</label>
+                                <input type="text" class="form-control form-control-sm" id="fg_username" value="admin" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Senha SSH</label>
+                                <input type="password" class="form-control form-control-sm" id="fg_password" required>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="btnFgDeploy" class="btn btn-success btn-sm w-50" onclick="startVpnAction('fortigate', 'deploy')">🚀 Deploy IPsec</button>
+                                <button type="button" id="btnFgRollback" class="btn btn-outline-danger btn-sm w-50" onclick="if(confirm('Confirmar remoção das configurações de VPN no FortiGate?')) startVpnAction('fortigate', 'rollback')">🔄 Rollback</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Palo Alto Controller -->
+            <div class="col-md-6">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">🛡️ Palo Alto (FW-PaloAlto - 192.168.0.252)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="formPaloalto">
+                            <input type="hidden" id="pa_firewall" value="paloalto">
+                            <div class="mb-2">
+                                <label class="form-label small">IP / Host</label>
+                                <input type="text" class="form-control form-control-sm" id="pa_host" value="192.168.0.252" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small">Usuário</label>
+                                <input type="text" class="form-control form-control-sm" id="pa_username" value="admin" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Senha SSH</label>
+                                <input type="password" class="form-control form-control-sm" id="pa_password" required>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="btnPaDeploy" class="btn btn-primary btn-sm w-50" onclick="startVpnAction('paloalto', 'deploy')">🚀 Deploy IPsec</button>
+                                <button type="button" id="btnPaRollback" class="btn btn-outline-danger btn-sm w-50" onclick="if(confirm('Confirmar remoção das configurações de VPN no Palo Alto?')) startVpnAction('paloalto', 'rollback')">🔄 Rollback</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentação Markdown Renderizada -->
+        <div class="markdown-body">
+            {{ content | safe }}
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        function startVpnAction(firewall, action) {
+            let host, username, password;
+            if (firewall === 'fortigate') {
+                host = document.getElementById('fg_host').value;
+                username = document.getElementById('fg_username').value;
+                password = document.getElementById('fg_password').value;
+            } else {
+                host = document.getElementById('pa_host').value;
+                username = document.getElementById('pa_username').value;
+                password = document.getElementById('pa_password').value;
+            }
+
+            const consoleBox = document.getElementById('vpnConsoleBox');
+            consoleBox.innerHTML = `<p class="text-info mb-1">[System] Conectando ao ${firewall.toUpperCase()} para ${action.toUpperCase()}...</p>`;
+            
+            const badge = document.getElementById('vpnStatusBadge');
+            badge.className = "badge bg-primary";
+            badge.innerText = "Executando em tempo real...";
+
+            socket.emit('start_vpn_action', {
+                firewall: firewall,
+                action: action,
+                host: host,
+                username: username,
+                password: password
+            });
+        }
+
+        socket.on('vpn_log_message', function(msg) {
+            const consoleBox = document.getElementById('vpnConsoleBox');
+            const lines = msg.data.split('\n');
+            lines.forEach(line => {
+                const p = document.createElement('p');
+                p.className = "mb-1";
+                p.textContent = line;
+                consoleBox.appendChild(p);
+            });
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        });
+
+        socket.on('vpn_finished', function(data) {
+            const badge = document.getElementById('vpnStatusBadge');
+            if (data.success) {
+                badge.className = "badge bg-success";
+                badge.innerText = "Executado com Sucesso!";
+            } else {
+                badge.className = "badge bg-danger";
+                badge.innerText = "Falha detectada no Script/Dispositivo";
+            }
+        });
+    </script>
+</body>
+</html>

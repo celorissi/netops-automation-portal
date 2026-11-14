@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração de VLANs - Mercado Livre Challenge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Socket.IO Client CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 fw-bold text-primary">Configuração de Switch Cisco</h1>
+                <p class="text-muted mb-0">Deploy de VLANs, Hostname e Streaming de Logs em Tempo Real</p>
+            </div>
+            <div>
+                <a href="/" class="btn btn-outline-dark">🏠 Início</a>
+                <a href="/backups" class="btn btn-outline-secondary">💾 Backups</a>
+            </div>
+        </header>
+
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Parâmetros de Deploy</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="configForm">
+                            <div class="mb-3">
+                                <label for="host" class="form-label">IP do Switch Cisco (PNETLab)</label>
+                                <input type="text" class="form-control" id="host" name="host" value="192.168.0.248" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuário SSH</label>
+                                <input type="text" class="form-control" id="username" name="username" value="admin" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Senha SSH</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="enable_password" class="form-label">Senha Enable (opcional)</label>
+                                <input type="password" class="form-control" id="enable_password" name="enable_password">
+                            </div>
+                            <div class="mb-3">
+                                <label for="hostname" class="form-label">Hostname a ser configurado</label>
+                                <input type="text" class="form-control" id="hostname" name="hostname" value="SWITCH_AUTO_01" required>
+                            </div>
+                            
+                            <hr>
+                            <p class="text-muted small"><strong>VLANs Obrigatórias:</strong><br>
+                                • VLAN 10: VLAN_DADOS<br>
+                                • VLAN 20: VLAN_VOZ<br>
+                                • VLAN 50: VLAN_SEGURANÇA
+                            </p>
+
+                            <input type="hidden" id="actionField" value="apply">
+
+                            <div class="d-grid gap-2">
+                                <button type="button" id="btnApply" class="btn btn-success" onclick="startConfig('apply')">
+                                    🚀 Aplicar Configuração & Backup
+                                </button>
+                                <button type="button" id="btnRemove" class="btn btn-outline-danger" onclick="if(confirm('Tem certeza que deseja remover as VLANs e reverter o hostname?')) startConfig('remove');">
+                                    🔄 Remover Configuração (Rollback)
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Console de Execução em Tempo Real</h5>
+                        <span id="statusBadge" class="badge bg-warning text-dark">Aguardando...</span>
+                    </div>
+                    <div class="card-body bg-dark text-light font-monospace" id="consoleBox" style="height: 450px; overflow-y: auto; font-size: 0.82rem;">
+                        <p class="text-muted mb-1">[System] Pronto para iniciar a automação no PNETLab...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        function startConfig(action) {
+            const host = document.getElementById('host').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const enable_password = document.getElementById('enable_password').value;
+            const hostname = document.getElementById('hostname').value;
+
+            const consoleBox = document.getElementById('consoleBox');
+            consoleBox.innerHTML = `<p class="text-info mb-1">[System] Iniciando conexão SSH e requisição de ${action.toUpperCase()}...</p>`;
+            
+            const badge = document.getElementById('statusBadge');
+            badge.className = "badge bg-primary";
+            badge.innerText = "Executando...";
+
+            // Desabilita botões durante a execução
+            document.getElementById('btnApply').disabled = true;
+            document.getElementById('btnRemove').disabled = true;
+
+            socket.emit('start_config', {
+                host: host,
+                username: username,
+                password: password,
+                enable_password: enable_password,
+                hostname: hostname,
+                action: action
+            });
+        }
+
+        socket.on('log_message', function(msg) {
+            const consoleBox = document.getElementById('consoleBox');
+            const lines = msg.data.split('\n');
+            lines.forEach(line => {
+                const p = document.createElement('p');
+                p.className = "mb-1";
+                p.textContent = line;
+                consoleBox.appendChild(p);
+            });
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        });
+
+        socket.on('config_finished', function(data) {
+            const badge = document.getElementById('statusBadge');
+            if (data.success) {
+                badge.className = "badge bg-success";
+                badge.innerText = "Concluído com Sucesso!";
+            } else {
+                badge.className = "badge bg-danger";
+                badge.innerText = "Finalizado com Alertas/Erros";
+            }
+            document.getElementById('btnApply').disabled = false;
+            document.getElementById('btnRemove').disabled = false;
+        });
+    </script>
+</body>
+</html>

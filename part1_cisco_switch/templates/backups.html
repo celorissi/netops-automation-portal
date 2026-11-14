@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Backups - Mercado Livre Challenge</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 fw-bold text-primary">Gerenciamento de Backups</h1>
+                <p class="text-muted mb-0">Execução Manual e Histórico de Snapshots (Máx. 20 arquivos)</p>
+            </div>
+            <div>
+                <a href="/" class="btn btn-outline-dark">🏠 Início</a>
+                <a href="/configure-page" class="btn btn-outline-primary">⚙️ Configuração</a>
+                <a href="/backups" class="btn btn-primary active">💾 Gerenciar Backups</a>
+            </div>
+        </header>
+
+        {% if message %}
+            <div class="alert alert-success shadow-sm" role="alert">
+                ✅ {{ message }}
+            </div>
+        {% endif %}
+        {% if error %}
+            <div class="alert alert-danger shadow-sm" role="alert">
+                ❌ {{ error }}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Painel para Disparar Backup Manual & Limpeza -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Capturar Novo Backup</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/backup-now" method="POST">
+                            <div class="mb-3">
+                                <label for="host" class="form-label">IP do Switch Cisco</label>
+                                <input type="text" class="form-control" id="host" name="host" value="192.168.0.248" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="hostname" class="form-label">Hostname do Dispositivo</label>
+                                <input type="text" class="form-control" id="hostname" name="hostname" value="SWITCH_AUTO_01" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuário SSH</label>
+                                <input type="text" class="form-control" id="username" name="username" value="admin" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Senha SSH</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="enable_password" class="form-label">Senha Enable (opcional)</label>
+                                <input type="password" class="form-control" id="enable_password" name="enable_password">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 mb-2">📥 Fazer Backup Agora</button>
+                        </form>
+
+                        <form action="/clear-backups" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar todos os backups salvos?');">
+                            <button type="submit" class="btn btn-outline-danger w-100">🗑️ Limpar Todos os Backups</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Listagem dos Últimos Backups -->
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Histórico de Backups Armazenados</h5>
+                        <span class="badge bg-light text-dark">Limite de 20 arquivos</span>
+                    </div>
+                    <div class="card-body">
+                        {% if backups %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nome do Arquivo</th>
+                                            <th>Data e Hora</th>
+                                            <th>Tamanho</th>
+                                            <th class="text-end">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for b in backups %}
+                                        <tr>
+                                            <td><code>{{ b.name }}</code></td>
+                                            <td>{{ b.date }}</td>
+                                            <td>{{ b.size }} bytes</td>
+                                            <td class="text-end">
+                                                <a href="/download/{{ b.name }}" class="btn btn-sm btn-outline-primary">Baixar (.cfg)</a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <h5>Nenhum backup encontrado.</h5>
+                                <p>Utilize o formulário ao lado para disparar o primeiro backup manual do switch.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
