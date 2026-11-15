@@ -1,132 +1,122 @@
-import getpass
-from netmiko import Netmiko
+import logging
+import sys
+from netmiko import ConnectHandler
 
+def configure_fortigate(host, username, password, log_callback=print):
+    try:
+        log_callback(f"[*] [SSH] Conectando ao FortiGate {host}:22 (User: {username})...")
+        device = {
+            'device_type': 'fortinet',
+            'host': host,
+            'username': username,
+            'password': password,
+            'port': 22,
+            'secret': password,
+            'timeout': 30
+        }
+        
+        net_connect = ConnectHandler(**device)
+        log_callback("[+] [SSH] Conexão estabelecida com sucesso!")
+        
+        commands = [
+            "config vpn ipsec phase1-interface",
+            "edit \"FGT-TO-PA-VPN\"",
+            "set interface \"port2\"",
+            "set remote-gw 200.200.200.2",
+            "set psksecret MySecurePSK123456",
+            "set proposal aes128gcm-prfsha256",
+            "set dhgrp 14",
+            "next",
+            "end",
+            
+            "config system interface",
+            "edit \"FGT-TO-PA-VPN\"",
+            "set mode static",
+            "set ip 169.254.100.1 255.255.255.255",
+            "set remote-ip 169.254.100.2 255.255.255.255",
+            "next",
+            "end",
+            
+            "config vpn ipsec phase2-interface",
+            "edit \"FGT-TO-PA-VPN\"",
+            "set phase1name \"FGT-TO-PA-VPN\"",
+            "set proposal aes128gcm-sha256",
+            "set pfs enable",
+            "set dhgrp 14",
+            "next",
+            "end",
+            
+            "config router static",
+            "edit 0",
+            "set dst 10.0.20.0 255.255.255.0",
+            "set device \"FGT-TO-PA-VPN\"",
+            "next",
+            "end",
+            
+            "config firewall policy",
+            "edit 0",
+            "set name \"FGT_TO_PA_OUT\"",
+            "set srcintf \"port3\"",
+            "set dstintf \"FGT-TO-PA-VPN\"",
+            "set srcaddr \"all\"",
+            "set dstaddr \"all\"",
+            "set action accept",
+            "set schedule \"always\"",
+            "set service \"ALL\"",
+            "next",
+            "edit 0",
+            "set name \"FGT_TO_PA_IN\"",
+            "set srcintf \"FGT-TO-PA-VPN\"",
+            "set dstintf \"port3\"",
+            "set srcaddr \"all\"",
+            "set dstaddr \"all\"",
+            "set action accept",
+            "set schedule \"always\"",
+            "set service \"ALL\"",
+            "next",
+            "end"
+        ]
+        
+        log_callback("[*] [SSH] Aplicando comandos CLI do túnel IPsec no FortiGate...")
+        output = net_connect.send_config_set(commands)
+        log_callback(f"[+] [SSH] Retorno da CLI:\n{output}")
+        
+        net_connect.disconnect()
+        log_callback("[+] Deploy via SSH concluído com SUCESSO!")
+        return True, ""
+        
+    except Exception as e:
+        err = str(e)
+        log_callback(f"[-] [SSH] Erro crítico na execução: {err}")
+        return False, err
 
-def configure_fortigate(
-    host="192.168.0.251", username="admin", password=None, log_callback=print
-):
-  if not password:
-    password = getpass.getpass(f"Senha SSH para FortiGate ({host}): ")
-
-  device = {
-      "device_type": "fortinet",
-      "host": host,
-      "username": username,
-      "password": password,
-      "timeout": 40,
-  }
-
-  commands = [
-      "config system interface",
-      "edit port2",
-      "set mode static",
-      "set ip 100.100.100.2 255.255.255.252",
-      "set allowaccess ping",
-      "next",
-      "end",
-      "config vpn ipsec phase1-interface",
-      "edit VPN_TO_PALOALTO",
-      "set interface port2",
-      "set ike-version 2",
-      "set peertype any",
-      "set net-device disable",
-      "set proposal aes256-sha256",
-      "set dhgrp 14",
-      "set remote-gw 200.200.200.2",
-      "set psksecret ML_Secured_Key_2026!",
-      "set keylife 86400",
-      "next",
-      "end",
-      "config vpn ipsec phase2-interface",
-      "edit VPN_TO_PALOALTO_P2",
-      "set phase1name VPN_TO_PALOALTO",
-      "set proposal aes256-sha256",
-      "set dhgrp 14",
-      "set keylifeseconds 28800",
-      "set src-subnet 10.0.0.0 255.255.0.0",
-      "set dst-subnet 20.0.0.0 255.255.0.0",
-      "next",
-      "end",
-      "config firewall address",
-      "edit NET_LOCAL_10",
-      "set subnet 10.0.10.0 255.255.255.0",
-      "next",
-      "edit NET_LOCAL_20",
-      "set subnet 10.0.20.0 255.255.255.0",
-      "next",
-      "edit NET_LOCAL_50",
-      "set subnet 10.0.50.0 255.255.255.0",
-      "next",
-      "edit NET_REMOTE_10",
-      "set subnet 20.0.10.0 255.255.255.0",
-      "next",
-      "edit NET_REMOTE_20",
-      "set subnet 20.0.20.0 255.255.255.0",
-      "next",
-      "edit NET_REMOTE_50",
-      "set subnet 20.0.50.0 255.255.255.0",
-      "next",
-      "end",
-      "config firewall addrgrp",
-      "edit GRP_LOCAL_VLANS",
-      "set member NET_LOCAL_10 NET_LOCAL_20 NET_LOCAL_50",
-      "next",
-      "edit GRP_REMOTE_VLANS",
-      "set member NET_REMOTE_10 NET_REMOTE_20 NET_REMOTE_50",
-      "next",
-      "end",
-      "config router static",
-      "edit 1",
-      "set dst 0.0.0.0 0.0.0.0",
-      "set gateway 100.100.100.1",
-      "set device port2",
-      "next",
-      "edit 2",
-      "set dst 20.0.0.0 255.255.0.0",
-      "set device VPN_TO_PALOALTO",
-      "next",
-      "end",
-      "config firewall policy",
-      "edit 10",
-      "set name OUTBOUND_TO_PALOALTO",
-      "set srcintf port3",
-      "set dstintf VPN_TO_PALOALTO",
-      "set srcaddr GRP_LOCAL_VLANS",
-      "set dstaddr GRP_REMOTE_VLANS",
-      "set action accept",
-      "set schedule always",
-      "set service ALL",
-      "next",
-      "edit 11",
-      "set name INBOUND_FROM_PALOALTO",
-      "set srcintf VPN_TO_PALOALTO",
-      "set dstintf port3",
-      "set srcaddr GRP_REMOTE_VLANS",
-      "set dstaddr GRP_LOCAL_VLANS",
-      "set action accept",
-      "set schedule always",
-      "set service ALL",
-      "next",
-      "end",
-  ]
-
-  log_callback(f"[*] Conectando ao FortiGate ({host})...")
-  try:
-    net_connect = Netmiko(**device)
-    log_callback(
-        "[*] Aplicando configurações de interface, VPN IPsec, rotas e políticas..."
-    )
-    output = net_connect.send_config_set(commands)
-    log_callback(output)
-
-    log_callback("[*] Validando status do túnel IKE...")
-    status = net_connect.send_command("get vpn ipsec tunnel summary")
-    log_callback(status)
-
-    net_connect.disconnect()
-    log_callback("[+] Configuração do FortiGate concluída com sucesso!")
-    return True, output + "\n" + status
-  except Exception as e:
-    err_msg = f"[-] Erro ao configurar FortiGate: {e}"
-    log_callback(err_msg)
-    return False, err_msg
+def rollback_fortigate(host, username, password, log_callback=print):
+    try:
+        log_callback(f"[*] [SSH] Executando Rollback no FortiGate {host}...")
+        device = {
+            'device_type': 'fortinet',
+            'host': host,
+            'username': username,
+            'password': password,
+            'port': 22,
+            'timeout': 30
+        }
+        net_connect = ConnectHandler(**device)
+        
+        commands = [
+            "config vpn ipsec phase2-interface",
+            "delete \"FGT-TO-PA-VPN\"",
+            "end",
+            "config vpn ipsec phase1-interface",
+            "delete \"FGT-TO-PA-VPN\"",
+            "end"
+        ]
+        output = net_connect.send_command_timing(commands) if isinstance(commands, str) else net_connect.send_config_set(commands)
+        log_callback(f"[+] [SSH] Retorno do Rollback:\n{output}")
+        net_connect.disconnect()
+        log_callback("[+] Rollback via SSH executado com sucesso!")
+        return True, ""
+    except Exception as e:
+        err = str(e)
+        log_callback(f"[-] [SSH] Erro no Rollback: {err}")
+        return False, err

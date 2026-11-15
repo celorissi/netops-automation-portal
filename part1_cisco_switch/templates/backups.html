@@ -3,114 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Backups - NetOps Automation Portal</title>
+    <title>Backups de Configuração - NetOps Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; }
+        .card { background-color: #1e293b; border: 1px solid #334155; color: #f8fafc; }
+        .table { color: #f8fafc; border-color: #334155; }
+        .table-dark { background-color: #1e293b; }
+        .form-control { background-color: #0f172a; border: 1px solid #475569; color: #f8fafc; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container py-5">
-        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="h3 fw-bold text-primary">Gerenciamento de Backups</h1>
-                <p class="text-muted mb-0">Execução Manual e Histórico de Snapshots (Máx. 20 arquivos)</p>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-secondary mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-info" href="/">⚡ NetOps Automation Portal</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Dashboard</a>
+                <a class="nav-link" href="/configure-page">Switches Cisco</a>
+                <a class="nav-link" href="/lan-dhcp">LAN & DHCP</a>
+                <a class="nav-link active" href="/backups">Backups</a>
+                <a class="nav-link active" href="/vpn-docs">VPN IPSec</a>
             </div>
-            <div>
-                <a href="/" class="btn btn-outline-dark">🏠 Início</a>
-                <a href="/configure-page" class="btn btn-outline-primary">⚙️ Configuração</a>
-                <a href="/backups" class="btn btn-primary active">💾 Gerenciar Backups</a>
-            </div>
-        </header>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="text-info mb-4">Gerenciamento de Backups</h2>
 
         {% if message %}
-            <div class="alert alert-success shadow-sm" role="alert">
-                ✅ {{ message }}
-            </div>
+            <div class="alert alert-success bg-success text-white border-0" role="alert">{{ message }}</div>
         {% endif %}
         {% if error %}
-            <div class="alert alert-danger shadow-sm" role="alert">
-                ❌ {{ error }}
-            </div>
+            <div class="alert alert-danger bg-danger text-white border-0" role="alert">{{ error }}</div>
         {% endif %}
 
-        <div class="row">
-            <!-- Painel para Disparar Backup Manual & Limpeza -->
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm mb-3">
-                    <div class="card-header bg-dark text-white">
-                        <h5 class="mb-0">Capturar Novo Backup</h5>
-                    </div>
-                    <div class="card-body">
-                        <form action="/backup-now" method="POST">
-                            <div class="mb-3">
-                                <label for="host" class="form-label">IP do Switch Cisco</label>
-                                <input type="text" class="form-control" id="host" name="host" value="192.168.0.248" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="hostname" class="form-label">Hostname do Dispositivo</label>
-                                <input type="text" class="form-control" id="hostname" name="hostname" value="SWITCH_AUTO_01" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Usuário SSH</label>
-                                <input type="text" class="form-control" id="username" name="username" value="admin" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Senha SSH</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="enable_password" class="form-label">Senha Enable (opcional)</label>
-                                <input type="password" class="form-control" id="enable_password" name="enable_password">
-                            </div>
-                            <button type="submit" class="btn btn-success w-100 mb-2">📥 Fazer Backup Agora</button>
-                        </form>
-
-                        <form action="/clear-backups" method="POST" onsubmit="return confirm('Tem certeza que deseja apagar todos os backups salvos?');">
-                            <button type="submit" class="btn btn-outline-danger w-100">🗑️ Limpar Todos os Backups</button>
-                        </form>
-                    </div>
+        <!-- Formulário de Backup Manual -->
+        <div class="card p-4 mb-4 shadow">
+            <h5 class="text-info mb-3">Realizar Backup Manual</h5>
+            <form action="/backup-now" method="POST" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">IP do Host</label>
+                    <input type="text" name="host" class="form-control" value="192.168.0.248" required>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Hostname</label>
+                    <input type="text" name="hostname" class="form-control" value="SWITCH" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" name="username" class="form-control" value="cisco" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Senha</label>
+                    <input type="password" name="password" class="form-control" value="cisco" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100 fw-bold">💾 Salvar Backup</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela de Backups Existentes -->
+        <div class="card p-4 shadow">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-info mb-0">Arquivos Armazenados (Máx. 20)</h5>
+                <form action="/clear-backups" method="POST" onsubmit="return confirm('Deseja realmente apagar todos os backups?');">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">🗑️ Limpar Todos</button>
+                </form>
             </div>
 
-            <!-- Tabela de Listagem dos Últimos Backups -->
-            <div class="col-md-8">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Histórico de Backups Armazenados</h5>
-                        <span class="badge bg-light text-dark">Limite de 20 arquivos</span>
-                    </div>
-                    <div class="card-body">
-                        {% if backups %}
-                            <div class="table-responsive">
-                                <table class="table table-striped table-hover align-middle">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Nome do Arquivo</th>
-                                            <th>Data e Hora</th>
-                                            <th>Tamanho</th>
-                                            <th class="text-end">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for b in backups %}
-                                        <tr>
-                                            <td><code>{{ b.name }}</code></td>
-                                            <td>{{ b.date }}</td>
-                                            <td>{{ b.size }} bytes</td>
-                                            <td class="text-end">
-                                                <a href="/download/{{ b.name }}" class="btn btn-sm btn-outline-primary">Baixar (.cfg)</a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Nome do Arquivo</th>
+                            <th>Data de Modificação</th>
+                            <th>Tamanho</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in backups %}
+                        <tr>
+                            <td class="font-monospace text-info">{{ file.name }}</td>
+                            <td>{{ file.date }}</td>
+                            <td>{{ file.size }} bytes</td>
+                            <td class="text-end">
+                                <a href="/download/{{ file.name }}" class="btn btn-sm btn-info fw-bold">📥 Baixar</a>
+                            </td>
+                        </tr>
                         {% else %}
-                            <div class="text-center py-5 text-muted">
-                                <h5>Nenhum backup encontrado.</h5>
-                                <p>Utilize o formulário ao lado para disparar o primeiro backup manual do switch.</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
+                        <tr>
+                            <td colspan="4" class="text-center text-secondary py-4">Nenhum backup encontrado no diretório.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

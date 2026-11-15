@@ -1,29 +1,35 @@
 #!/bin/bash
+set -e
 
 echo "=================================================="
-echo "  NetOps Portal - Configuração do Ambiente Ubuntu "
+echo "  NetOps Portal - Setup Automatizado de Ambiente  "
 echo "=================================================="
 
-# Garante que o python3-venv e pip estão instalados no sistema
-echo "[*] Verificando pacotes do sistema Python..."
-sudo apt update && sudo apt install -y python3-venv python3-pip python3-dev
-
-# Cria o ambiente virtual se ele não existir
-if [ ! -d "venv" ]; then
-    echo "[*] Criando o ambiente virtual (venv)..."
-    python3 -m venv venv
+# Verifica se python3.11 está disponível, senão usa python3 padrão
+if command -v python3.11 &> /dev/null; then
+    PYTHON_BIN="python3.11"
 else
-    echo "[+] Ambiente virtual 'venv' já existe."
+    PYTHON_BIN="python3"
 fi
 
-# Ativa o venv e instala as dependências
-echo "[*] Ativando o venv e instalando dependências..."
+echo "[*] Usando interpretador: $($PYTHON_BIN --version)"
+
+if [ -d "venv" ]; then
+    echo "[*] Removendo ambiente virtual antigo..."
+    rm -rf venv
+fi
+
+echo "[*] Criando ambiente virtual (venv)..."
+$PYTHON_BIN -m venv venv
 source venv/bin/activate
 
+echo "[*] Atualizando pip e instalando dependências homologadas..."
 pip install --upgrade pip
-pip install flask flask-socketio netmiko markdown
+pip install "paramiko==3.4.0" "netmiko>=4.3.0" flask flask-socketio markdown
 
-echo "--------------------------------------------------"
+chmod +x start.sh setup_env.sh
+
+echo "=================================================="
 echo "[+] Ambiente configurado com sucesso!"
 echo "[+] Para iniciar o portal, execute: ./start.sh"
-echo "--------------------------------------------------"
+echo "=================================================="

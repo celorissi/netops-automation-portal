@@ -3,163 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arquitetura e Automação VPN IPsec - NetOps Automation Portal</title>
+    <title>NetOps Automation Portal - VPN IPsec</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Socket.IO Client CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        body { background-color: #f8f9fa; }
-        .markdown-body { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); margin-top: 20px; }
-        .markdown-body pre { background: #212529; color: #f8f9fa; padding: 15px; border-radius: 5px; }
-        .markdown-body code { color: #d63384; }
-        .markdown-body pre code { color: #f8f9fa; }
+        body {
+            background-color: #0b111e;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: #0f172a;
+            border-bottom: 1px solid #1e293b;
+        }
+        .navbar-brand {
+            color: #00d2ff !important;
+            font-weight: bold;
+        }
+        .nav-link {
+            color: #94a3b8 !important;
+            transition: color 0.2s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #f8fafc !important;
+        }
+        .page-title {
+            color: #00d2ff;
+            font-weight: 700;
+        }
+        .console-card {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+        }
+        .console-header {
+            background-color: #161f33;
+            padding: 10px 16px;
+            border-bottom: 1px solid #1f2937;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .console-title {
+            color: #00d2ff;
+            font-weight: 600;
+            margin: 0;
+        }
+        .console-body {
+            background-color: #000000;
+            color: #10b981;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 240px;
+            overflow-y: auto;
+            padding: 15px;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            white-space: pre-wrap;
+        }
+        .fw-card {
+            background-color: #111827;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 100%;
+        }
+        .fw-card-fgt {
+            border: 1px solid #16a34a;
+        }
+        .fw-header-fgt {
+            background-color: #15803d;
+            color: #ffffff;
+            padding: 12px 16px;
+            font-weight: 600;
+        }
+        .fw-card-pa {
+            border: 1px solid #0284c7;
+        }
+        .fw-header-pa {
+            background-color: #0369a1;
+            color: #ffffff;
+            padding: 12px 16px;
+            font-weight: 600;
+        }
+        .form-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            margin-bottom: 4px;
+        }
+        .form-control {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            color: #f8fafc;
+        }
+        .form-control:focus {
+            background-color: #1e293b;
+            border-color: #00d2ff;
+            color: #f8fafc;
+            box-shadow: none;
+        }
+        .docs-container {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        .docs-container h1, .docs-container h2, .docs-container h3 {
+            color: #00d2ff;
+        }
+        .docs-container table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+            border-collapse: collapse;
+        }
+        .docs-container th, .docs-container td {
+            padding: 0.75rem;
+            border: 1px solid #334155;
+        }
+        .docs-container th {
+            background-color: #1e293b;
+        }
+        .docs-container pre {
+            background-color: #000000;
+            padding: 12px;
+            border-radius: 6px;
+            color: #38bdf8;
+        }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="h3 fw-bold text-success">Parte 2: Automação e Arquitetura VPN IPsec</h1>
-                <p class="text-muted mb-0">Integração Multi-Vendor (FortiGate x Palo Alto)</p>
-            </div>
-            <div>
-                <a href="/" class="btn btn-outline-dark">🏠 Início</a>
-                <a href="/configure-page" class="btn btn-outline-primary">⚙️ Configuração</a>
-                <a href="/backups" class="btn btn-outline-secondary">💾 Backups</a>
-            </div>
-        </header>
 
-        <!-- Console de Execução em Tempo Real -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Console de Execução dos Firewalls (Tempo Real)</h5>
-                <span id="vpnStatusBadge" class="badge bg-secondary">Aguardando comando...</span>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg px-4 py-2">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">⚡ NetOps Automation Portal</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav gap-3">
+                    <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/configure-page">Switches Cisco</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/lan-dhcp">LAN & DHCP</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/backups">Backups</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/vpn-docs">VPN IPsec</a></li>
+                </ul>
             </div>
-            <div class="card-body bg-black text-light font-monospace" id="vpnConsoleBox" style="height: 300px; overflow-y: auto; font-size: 0.85rem;">
-                <p class="text-muted mb-1">[System] Pronto para executar Deploy ou Rollback nos firewalls...</p>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <div class="container py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary">
+            <div>
+                <h2 class="page-title mb-1">Parte 2: Automação e Arquitetura VPN IPsec</h2>
+                <p class="text-secondary mb-0">Integração Multi-Vendor (FortiGate x Palo Alto)</p>
+            </div>
+            
+            <!-- Seletor de Método (API REST / SDK vs SSH) -->
+            <div class="mt-3 mt-md-0">
+                <div class="btn-group" role="group" aria-label="Método de Conexão">
+                    <input type="radio" class="btn-check" name="conn_mode" id="mode_api" value="api" checked onchange="alternarModo()">
+                    <label class="btn btn-outline-info btn-sm px-3 py-2 fw-semibold" for="mode_api">⚡ Modo API REST / SDK</label>
+
+                    <input type="radio" class="btn-check" name="conn_mode" id="mode_ssh" value="ssh" onchange="alternarModo()">
+                    <label class="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold" for="mode_ssh">💻 Modo SSH (CLI)</label>
+                </div>
             </div>
         </div>
 
-        <!-- Painéis de Controle de Automação (FortiGate & Palo Alto) -->
-        <div class="row g-4 mb-4">
-            <!-- FortiGate Controller -->
+        <!-- Console de Execução -->
+        <div class="console-card mb-4">
+            <div class="console-header">
+                <h6 class="console-title">Console de Execução dos Firewalls (Tempo Real)</h6>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2 py-0" onclick="limparConsole()">Limpar</button>
+                    <span id="status-badge" class="badge bg-secondary">Aguardando comando...</span>
+                </div>
+            </div>
+            <div id="console-output" class="console-body">[System] Pronto para executar Deploy ou Rollback nos firewalls...</div>
+        </div>
+
+        <!-- Cards dos Firewalls -->
+        <div class="row g-4">
+            <!-- Card FortiGate -->
             <div class="col-md-6">
-                <div class="card shadow-sm border-success">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">🛡️ FortiGate (FW-Fortigate - 192.168.0.251)</h5>
+                <div class="fw-card fw-card-fgt">
+                    <div class="fw-header-fgt">
+                        🛡️ FortiGate (FW-Fortigate - 192.168.0.251)
                     </div>
-                    <div class="card-body">
-                        <form id="formFortigate">
-                            <input type="hidden" id="fg_firewall" value="fortigate">
-                            <div class="mb-2">
-                                <label class="form-label small">IP / Host</label>
-                                <input type="text" class="form-control form-control-sm" id="fg_host" value="192.168.0.251" required>
+                    <div class="p-3">
+                        <div class="mb-3">
+                            <label class="form-label">IP / Host</label>
+                            <input type="text" id="fgt_host" class="form-control" value="192.168.0.251">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" id="fgt_user_label">Usuário API</label>
+                            <input type="text" id="fgt_user" class="form-control" value="api-fgt">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" id="fgt_secret_label">Token API (Bearer)</label>
+                            <input type="password" id="fgt_pass" class="form-control" placeholder="Cole o Token da API (ex: 0ctttfpm...)">
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-success w-100 fw-semibold" onclick="executarVpn('fortigate', 'deploy')">
+                                    🚀 Deploy IPsec
+                                </button>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label small">Usuário</label>
-                                <input type="text" class="form-control form-control-sm" id="fg_username" value="admin" required>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="executarVpn('fortigate', 'rollback')">
+                                    🔄 Rollback
+                                </button>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label small">Senha SSH</label>
-                                <input type="password" class="form-control form-control-sm" id="fg_password" required>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" id="btnFgDeploy" class="btn btn-success btn-sm w-50" onclick="startVpnAction('fortigate', 'deploy')">🚀 Deploy IPsec</button>
-                                <button type="button" id="btnFgRollback" class="btn btn-outline-danger btn-sm w-50" onclick="if(confirm('Confirmar remoção das configurações de VPN no FortiGate?')) startVpnAction('fortigate', 'rollback')">🔄 Rollback</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Palo Alto Controller -->
+            <!-- Card Palo Alto -->
             <div class="col-md-6">
-                <div class="card shadow-sm border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">🛡️ Palo Alto (FW-PaloAlto - 192.168.0.252)</h5>
+                <div class="fw-card fw-card-pa">
+                    <div class="fw-header-pa">
+                        🛡️ Palo Alto (FW-PaloAlto - 192.168.0.252)
                     </div>
-                    <div class="card-body">
-                        <form id="formPaloalto">
-                            <input type="hidden" id="pa_firewall" value="paloalto">
-                            <div class="mb-2">
-                                <label class="form-label small">IP / Host</label>
-                                <input type="text" class="form-control form-control-sm" id="pa_host" value="192.168.0.252" required>
+                    <div class="p-3">
+                        <div class="mb-3">
+                            <label class="form-label">IP / Host</label>
+                            <input type="text" id="pa_host" class="form-control" value="192.168.0.252">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Usuário</label>
+                            <input type="text" id="pa_user" class="form-control" value="admin">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label" id="pa_secret_label">Senha API / Admin</label>
+                            <input type="password" id="pa_pass" class="form-control" placeholder="Senha administrativa">
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary w-100 fw-semibold" onclick="executarVpn('paloalto', 'deploy')">
+                                    🚀 Deploy IPsec
+                                </button>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label small">Usuário</label>
-                                <input type="text" class="form-control form-control-sm" id="pa_username" value="admin" required>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-outline-danger w-100 fw-semibold" onclick="executarVpn('paloalto', 'rollback')">
+                                    🔄 Rollback
+                                </button>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label small">Senha SSH</label>
-                                <input type="password" class="form-control form-control-sm" id="pa_password" required>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button type="button" id="btnPaDeploy" class="btn btn-primary btn-sm w-50" onclick="startVpnAction('paloalto', 'deploy')">🚀 Deploy IPsec</button>
-                                <button type="button" id="btnPaRollback" class="btn btn-outline-danger btn-sm w-50" onclick="if(confirm('Confirmar remoção das configurações de VPN no Palo Alto?')) startVpnAction('paloalto', 'rollback')">🔄 Rollback</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Documentação Markdown Renderizada -->
-        <div class="markdown-body">
+        {% if content %}
+        <div class="docs-container">
             {{ content | safe }}
         </div>
+        {% endif %}
     </div>
 
     <script>
         const socket = io();
+        const consoleBox = document.getElementById('console-output');
+        const statusBadge = document.getElementById('status-badge');
 
-        function startVpnAction(firewall, action) {
-            let host, username, password;
-            if (firewall === 'fortigate') {
-                host = document.getElementById('fg_host').value;
-                username = document.getElementById('fg_username').value;
-                password = document.getElementById('fg_password').value;
+        function appendLog(text) {
+            consoleBox.innerHTML += `\n${text}`;
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        function limparConsole() {
+            consoleBox.innerHTML = '[System] Console limpo. Aguardando comando...';
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.innerText = 'Aguardando comando...';
+        }
+
+        function alternarModo() {
+            const isApi = document.getElementById('mode_api').checked;
+            
+            const fgtUserLabel = document.getElementById('fgt_user_label');
+            const fgtUser = document.getElementById('fgt_user');
+            const fgtSecretLabel = document.getElementById('fgt_secret_label');
+            const fgtPass = document.getElementById('fgt_pass');
+            const paSecretLabel = document.getElementById('pa_secret_label');
+
+            if (isApi) {
+                fgtUserLabel.innerText = "Usuário API";
+                fgtUser.value = "api-fgt";
+                fgtSecretLabel.innerText = "Token API (Bearer)";
+                fgtPass.placeholder = "Cole o Token da API (ex: 0ctttfpm...)";
+                paSecretLabel.innerText = "Senha API / Admin";
             } else {
-                host = document.getElementById('pa_host').value;
-                username = document.getElementById('pa_username').value;
-                password = document.getElementById('pa_password').value;
+                fgtUserLabel.innerText = "Usuário SSH";
+                fgtUser.value = "admin";
+                fgtSecretLabel.innerText = "Senha SSH";
+                fgtPass.placeholder = "Senha administrativa SSH";
+                paSecretLabel.innerText = "Senha SSH";
+            }
+        }
+
+        function executarVpn(firewall, action) {
+            const mode = document.querySelector('input[name="conn_mode"]:checked').value;
+            const host = document.getElementById(firewall === 'fortigate' ? 'fgt_host' : 'pa_host').value.trim();
+            const username = document.getElementById(firewall === 'fortigate' ? 'fgt_user' : 'pa_user').value.trim();
+            const password = document.getElementById(firewall === 'fortigate' ? 'fgt_pass' : 'pa_pass').value;
+
+            if (!password) {
+                alert(`Por favor, informe ${firewall === 'fortigate' && mode === 'api' ? 'o Token de API' : 'a senha'} antes de executar.`);
+                return;
             }
 
-            const consoleBox = document.getElementById('vpnConsoleBox');
-            consoleBox.innerHTML = `<p class="text-info mb-1">[System] Conectando ao ${firewall.toUpperCase()} para ${action.toUpperCase()}...</p>`;
-            
-            const badge = document.getElementById('vpnStatusBadge');
-            badge.className = "badge bg-primary";
-            badge.innerText = "Executando em tempo real...";
+            statusBadge.className = 'badge bg-warning text-dark';
+            statusBadge.innerText = `Executando (${mode.toUpperCase()})...`;
 
-            socket.emit('start_vpn_action', {
+            appendLog(`\n[System] Enviando solicitação de ${action.toUpperCase()} via ${mode.toUpperCase()} para ${firewall.toUpperCase()} (${host})...`);
+
+            socket.emit("start_vpn_action", {
                 firewall: firewall,
                 action: action,
+                mode: mode,
                 host: host,
                 username: username,
                 password: password
             });
         }
 
-        socket.on('vpn_log_message', function(msg) {
-            const consoleBox = document.getElementById('vpnConsoleBox');
-            const lines = msg.data.split('\n');
-            lines.forEach(line => {
-                const p = document.createElement('p');
-                p.className = "mb-1";
-                p.textContent = line;
-                consoleBox.appendChild(p);
-            });
-            consoleBox.scrollTop = consoleBox.scrollHeight;
+        socket.on("vpn_log_message", function(msg) {
+            appendLog(msg.data);
         });
 
-        socket.on('vpn_finished', function(data) {
-            const badge = document.getElementById('vpnStatusBadge');
+        socket.on("vpn_finished", function(data) {
             if (data.success) {
-                badge.className = "badge bg-success";
-                badge.innerText = "Executado com Sucesso!";
+                statusBadge.className = 'badge bg-success';
+                statusBadge.innerText = 'Concluído com Sucesso';
+                appendLog('[+] Operação finalizada com sucesso!');
             } else {
-                badge.className = "badge bg-danger";
-                badge.innerText = "Falha detectada no Script/Dispositivo";
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.innerText = 'Falha na Execução';
+                appendLog('[-] Operação finalizada com erros.');
             }
         });
     </script>

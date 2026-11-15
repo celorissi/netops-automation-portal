@@ -1,0 +1,512 @@
+
+
+config {
+  mgt-config {
+    users {
+      admin {
+        phash $1$sybxavjr$W4x2uLDw0LVaWHy5HgqYw1;
+        permissions {
+          role-based {
+            superuser yes;
+          }
+        }
+      }
+    }
+    password-complexity {
+      enabled yes;
+      minimum-length 8;
+    }
+  }
+  shared {
+    application;
+    application-group;
+    service;
+    service-group;
+    botnet {
+      configuration {
+        http {
+          dynamic-dns {
+            enabled yes;
+            threshold 5;
+          }
+          malware-sites {
+            enabled yes;
+            threshold 5;
+          }
+          recent-domains {
+            enabled yes;
+            threshold 5;
+          }
+          ip-domains {
+            enabled yes;
+            threshold 10;
+          }
+          executables-from-unknown-sites {
+            enabled yes;
+            threshold 5;
+          }
+        }
+        other-applications {
+          irc yes;
+        }
+        unknown-applications {
+          unknown-tcp {
+            destinations-per-hour 10;
+            sessions-per-hour 10;
+            session-length {
+              maximum-bytes 100;
+              minimum-bytes 50;
+            }
+          }
+          unknown-udp {
+            destinations-per-hour 10;
+            sessions-per-hour 10;
+            session-length {
+              maximum-bytes 100;
+              minimum-bytes 50;
+            }
+          }
+        }
+      }
+      report {
+        topn 100;
+        scheduled yes;
+      }
+    }
+  }
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              link-state auto;
+              layer3 {
+                ip {
+                  10.0.20.1/24;
+                }
+                interface-management-profile PERMITE_PING;
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                ndp-proxy {
+                  enabled no;
+                }
+                lldp {
+                  enable no;
+                }
+                ip {
+                  172.16.100.2/30;
+                }
+                interface-management-profile MGMT-PING;
+              }
+              link-state up;
+            }
+          }
+          tunnel {
+            units {
+              tunnel.1 {
+                ip {
+                  169.254.100.2/30;
+                }
+              }
+            }
+          }
+        }
+        profiles {
+          monitor-profile {
+            default {
+              interval 3;
+              threshold 5;
+              action wait-recover;
+            }
+          }
+          interface-management-profile {
+            PERMITE_GERENCIA {
+              ping yes;
+              ssh yes;
+            }
+            PERMITE_PING {
+              ping yes;
+            }
+            PING {
+              ping yes;
+            }
+            MGMT-PING {
+              ping yes;
+            }
+          }
+        }
+        ike {
+          crypto-profiles {
+            ike-crypto-profiles {
+              default {
+                encryption [ aes-128-cbc 3des];
+                hash sha1;
+                dh-group group2;
+                lifetime {
+                  hours 8;
+                }
+              }
+              Suite-B-GCM-128 {
+                encryption aes-128-cbc;
+                hash sha256;
+                dh-group group19;
+                lifetime {
+                  hours 8;
+                }
+              }
+              Suite-B-GCM-256 {
+                encryption aes-256-cbc;
+                hash sha384;
+                dh-group group20;
+                lifetime {
+                  hours 8;
+                }
+              }
+              fgt-ike-profile {
+                hash [ md5 sha1];
+                dh-group group2;
+                encryption des;
+                lifetime {
+                  seconds 28800;
+                }
+              }
+            }
+            ipsec-crypto-profiles {
+              default {
+                esp {
+                  encryption [ aes-128-cbc 3des];
+                  authentication sha1;
+                }
+                dh-group group2;
+                lifetime {
+                  hours 1;
+                }
+              }
+              Suite-B-GCM-128 {
+                esp {
+                  encryption aes-128-gcm;
+                  authentication none;
+                }
+                dh-group group19;
+                lifetime {
+                  hours 1;
+                }
+              }
+              Suite-B-GCM-256 {
+                esp {
+                  encryption aes-256-gcm;
+                  authentication none;
+                }
+                dh-group group20;
+                lifetime {
+                  hours 1;
+                }
+              }
+              fgt-ipsec-profile {
+                esp {
+                  encryption des;
+                  authentication [ md5 sha1];
+                }
+                dh-group group2;
+                lifetime {
+                  seconds 43200;
+                }
+              }
+            }
+            global-protect-app-crypto-profiles {
+              default {
+                encryption aes-128-cbc;
+                authentication sha1;
+              }
+            }
+          }
+          gateway {
+            FGT-TO-PA-VPN {
+              peer-address {
+                ip 172.16.100.1;
+              }
+              local-address {
+                interface ethernet1/2;
+                ip 172.16.100.2/30;
+              }
+              authentication {
+                pre-shared-key {
+                  key -AQ==opxXxolN7m6CUVENWMBweO4/Sb8=56UyyadbKtxIqlbOyH7ZWQ==;
+                }
+              }
+              protocol {
+                ikev2 {
+                  ike-crypto-profile fgt-ike-profile;
+                }
+                version ikev2;
+              }
+            }
+          }
+        }
+        qos {
+          profile {
+            default {
+              class-bandwidth-type {
+                mbps {
+                  class {
+                    class1 {
+                      priority real-time;
+                    }
+                    class2 {
+                      priority high;
+                    }
+                    class3 {
+                      priority high;
+                    }
+                    class4 {
+                      priority medium;
+                    }
+                    class5 {
+                      priority medium;
+                    }
+                    class6 {
+                      priority low;
+                    }
+                    class7 {
+                      priority low;
+                    }
+                    class8 {
+                      priority low;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          default {
+            interface [ ethernet1/1 ethernet1/2 tunnel.1];
+            routing-table {
+              ip {
+                static-route {
+                  FGT-LAN {
+                    nexthop {
+                      ip-address 169.254.100.1;
+                    }
+                    interface tunnel.1;
+                    metric 10;
+                    destination 10.0.10.0/24;
+                  }
+                  FGT-PEER {
+                    nexthop {
+                      ip-address 172.16.100.1;
+                    }
+                    interface ethernet1/2;
+                    metric 10;
+                    destination 172.16.100.1/32;
+                  }
+                }
+              }
+            }
+            ecmp {
+              algorithm {
+                ip-modulo;
+              }
+            }
+            protocol {
+              bgp {
+                routing-options {
+                  graceful-restart {
+                    enable yes;
+                  }
+                }
+                enable no;
+              }
+              rip {
+                enable no;
+              }
+              ospf {
+                enable no;
+              }
+              ospfv3 {
+                enable no;
+              }
+            }
+          }
+        }
+        dhcp {
+          interface;
+        }
+        tunnel {
+          ipsec {
+            FGT-TO-PA-VPN {
+              auto-key {
+                ike-gateway {
+                  FGT-TO-PA-VPN;
+                }
+                ipsec-crypto-profile fgt-ipsec-profile;
+                proxy-id {
+                  fgt {
+                    protocol {
+                      any;
+                    }
+                    local 10.0.20.0/24;
+                    remote 10.0.10.0/24;
+                  }
+                }
+              }
+              tunnel-interface tunnel.1;
+              tunnel-monitor {
+                enable no;
+              }
+            }
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          type {
+            static;
+          }
+          update-server updates.paloaltonetworks.com;
+          update-schedule {
+            threats {
+              recurring {
+                weekly {
+                  day-of-week wednesday;
+                  at 01:02;
+                  action download-only;
+                }
+              }
+            }
+          }
+          timezone US/Pacific;
+          service {
+            disable-telnet yes;
+            disable-http yes;
+          }
+          hostname PA-VM;
+          ip-address 192.168.0.252;
+          netmask 255.255.255.0;
+          default-gateway 192.168.0.1;
+          device-telemetry {
+            device-health-performance yes;
+            product-usage yes;
+            threat-prevention yes;
+            region americas;
+          }
+        }
+        setting {
+          config {
+            rematch yes;
+          }
+          management {
+            hostname-type-in-syslog FQDN;
+          }
+          auto-mac-detect yes;
+        }
+      }
+      vsys {
+        vsys1 {
+          application;
+          application-group;
+          zone {
+            LAN-ZONE {
+              network {
+                layer3 ethernet1/1;
+              }
+            }
+            zone-wan {
+              network {
+                layer3 ethernet1/2;
+              }
+            }
+            zone-vpn {
+              network {
+                layer3 tunnel.1;
+              }
+            }
+          }
+          service;
+          service-group;
+          schedule;
+          rulebase {
+            security {
+              rules {
+                ALLOW-IPSEC 3dac95dc-86ca-4b3f-93dd-e2c7bf2bfef5 {
+                  from zone-wan;
+                  to zone-wan;
+                  source any;
+                  destination any;
+                  application [ ike ipsec];
+                  service application-default;
+                  action allow;
+                  log-end yes;
+                }
+                LAN20-to-LAN10 76725ad2-0c9e-4ea5-b657-cc4154351652 {
+                  from LAN-ZONE;
+                  to zone-vpn;
+                  source LAN-PA-10.0.20.0_24;
+                  destination LAN-FGT-10.0.10.0_24;
+                  application any;
+                  service application-default;
+                  action allow;
+                  log-end yes;
+                }
+                LAN10-to-LAN20 e4064e11-facd-45e7-ade0-919d002dc563 {
+                  from zone-vpn;
+                  to LAN-ZONE;
+                  source LAN-FGT-10.0.10.0_24;
+                  destination LAN-PA-10.0.20.0_24;
+                  application any;
+                  service application-default;
+                  action allow;
+                  log-end yes;
+                }
+                ALLO-IPSEC 9d2d3a09-5177-476f-9c55-d51a906fbb38 {
+                  application [ ike ipsec];
+                  from zone-wan;
+                  to zone-wan;
+                  source any;
+                  destination any;
+                  action allow;
+                  service any;
+                }
+                LAN-to-VPN 70069dcd-06fc-4a8c-bcc6-2c00448b9fa4 {
+                  from LAN-ZONE;
+                  to zone-vpn;
+                  source any;
+                  destination any;
+                  application any;
+                  action allow;
+                  service any;
+                }
+                VPN-to-LAN 16085acd-8458-41f9-b60c-85f6e19a27b0 {
+                  from zone-vpn;
+                  to LAN-ZONE;
+                  source any;
+                  destination any;
+                  application any;
+                  action allow;
+                  service any;
+                }
+              }
+            }
+          }
+          import {
+            network {
+              interface [ ethernet1/1 ethernet1/2];
+            }
+          }
+          address {
+            LAN-FGT-10.0.10.0_24 {
+              ip-netmask 10.0.10.0/24;
+            }
+            LAN-PA-10.0.20.0_24 {
+              ip-netmask 10.0.20.0/24;
+            }
+          }
+        }
+      }
+    }
+  }
+}
