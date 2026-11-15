@@ -12,15 +12,25 @@ from flask import (
 )
 from flask_socketio import SocketIO
 from netmiko import Netmiko
+import logging
+import sys
 
 import paramiko
-
-# Garante o registro limpo do KexGroup14 exigido pelo IOL e Python 3.13
+# Força o Paramiko a registrar e aceitar o grupo 14 do IOL globalmente
 try:
-    if "diffie-hellman-group14-sha1" not in paramiko.Transport._kex_info:
-        paramiko.Transport._kex_info["diffie-hellman-group14-sha1"] = KexGroup14
+    from paramiko.transport import Transport
+    # Adiciona explicitamente o suporte caso não esteja presente na lista ativa
+    if "diffie-hellman-group14-sha1" not in Transport._kex_info:
+        from paramiko.kex_gex import KexGroup14
+        Transport._kex_info["diffie-hellman-group14-sha1"] = KexGroup14
 except Exception:
     pass
+
+# Ativa o log detalhado do Netmiko no console para ver o que o switch está respondendo
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logger = logging.getLogger("netmiko")
+logger.setLevel(logging.DEBUG)
+
 
 # Garante que o Python encontre os scripts da parte 2
 sys.path.append(
@@ -119,6 +129,7 @@ def backup_now():
         "ssh_strict": False,
         "look_for_keys": False,
         "allow_agent": False,
+        # Força o Paramiko a rejeitar os KEX modernos e usar o group14-sha1 do IOL
         "disabled_algorithms": {
             "kex": [
                 "curve25519-sha256",
@@ -131,7 +142,6 @@ def backup_now():
                 "diffie-hellman-group14-sha256",
             ]
         },
-
     }
 
     try:

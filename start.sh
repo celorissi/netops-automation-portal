@@ -30,6 +30,10 @@ pip install flask flask-socketio netmiko markdown gevent simple-websocket > /dev
 # 4. Garante a existência da pasta de backups
 mkdir -p part1_cisco_switch/backups
 
+echo "[*] IP Detectado para o Portal: http://$IP_LOCAL:$PORTA"
+echo "[*] Ativando ambiente virtual..."
+source venv/bin/activate
+
 # 5. Inicia a aplicação Flask
 echo "--------------------------------------------------"
 echo "[+] Servidor rodando! Acesse: http://$LOCAL_IP:$PORTAL_PORT"
