@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração de VLANs - Mercado Livre Challenge</title>
+    <title>Configuração de VLANs - NetOps Automation Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Socket.IO Client CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
@@ -13,7 +13,7 @@
         <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="h3 fw-bold text-primary">Configuração de Switch Cisco</h1>
-                <p class="text-muted mb-0">Deploy de VLANs, Hostname e Streaming de Logs em Tempo Real</p>
+                <p class="text-muted mb-0">Deploy de VLANs, Portas de Acesso, Hostname e Streaming de Logs em Tempo Real</p>
             </div>
             <div>
                 <a href="/" class="btn btn-outline-dark">🏠 Início</a>
@@ -51,10 +51,10 @@
                             </div>
                             
                             <hr>
-                            <p class="text-muted small"><strong>VLANs Obrigatórias:</strong><br>
-                                • VLAN 10: VLAN_DADOS<br>
-                                • VLAN 20: VLAN_VOZ<br>
-                                • VLAN 50: VLAN_SEGURANÇA
+                            <p class="text-muted small"><strong>VLANs e Portas Mapeadas (vIOS):</strong><br>
+                                • VLAN 10 (VLAN_DADOS) ➔ Ethernet0/1<br>
+                                • VLAN 20 (VLAN_VOZ) ➔ Ethernet0/2<br>
+                                • VLAN 50 (VLAN_SEGURANCA) ➔ Ethernet0/3
                             </p>
 
                             <input type="hidden" id="actionField" value="apply">
@@ -63,7 +63,7 @@
                                 <button type="button" id="btnApply" class="btn btn-success" onclick="startConfig('apply')">
                                     🚀 Aplicar Configuração & Backup
                                 </button>
-                                <button type="button" id="btnRemove" class="btn btn-outline-danger" onclick="if(confirm('Tem certeza que deseja remover as VLANs e reverter o hostname?')) startConfig('remove');">
+                                <button type="button" id="btnRemove" class="btn btn-outline-danger" onclick="if(confirm('Tem certeza que deseja remover as VLANs, restaurar as portas e reverter o hostname?')) startConfig('remove');">
                                     🔄 Remover Configuração (Rollback)
                                 </button>
                             </div>
