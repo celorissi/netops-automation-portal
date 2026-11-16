@@ -1,0 +1,14 @@
+Last login: Mon Nov 16 03:50:19 2026 from 192.168.0.202
+
+
+
+Number of failed attempts since last successful login: 0
+
+
+set cli config-output-format xml
+show configuration running
+admin@PA-VM> set [Kadmin@PA-VM> set cli [Kadmin@PA-VM> set cli config-output-format [Kadmin@PA-VM> set cli config-output-format xml
+admin@PA-VM> show [Kadmin@PA-VM> show configuration [Kadmin@PA-VM> show configuration running
+
+Invalid syntax.
+admin@PA-VM> 
