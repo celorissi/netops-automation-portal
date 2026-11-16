@@ -89,9 +89,14 @@ python 2.7.backup_fortigate.py
 https://github.com/user-attachments/assets/965a2d18-5b0e-4d5b-9cd1-cc743f71bd7a
 
 
-
 - **Parte 2 (FortiGate & Palo Alto VPN IPsec):** Orquestração de túneis IPsec multi-vendor, políticas de segurança, rotas estáticas, validação de conectividade e backups automatizados.
 
+#### Configuração (Deploy)
+https://github.com/user-attachments/assets/e022e8fa-9a7f-4285-8938-bd49c634a7b8
+
+#### Rollback 
+
+https://github.com/user-attachments/assets/d4980b07-02cc-4ac3-930a-21473d7a194c
 
 ---
 
@@ -144,3 +149,21 @@ https://github.com/user-attachments/assets/965a2d18-5b0e-4d5b-9cd1-cc743f71bd7a
 ├── setup_env.sh                         # Script de preparação do ambiente virtual
 └── start.sh                             # Script de inicialização automatizada (IP dinâmico + venv)
 ```
+
+### 🖥️ Imagens e Plataformas do Laboratório
+
+| Dispositivo | Função na Topologia | Imagem / Versão Utilizada |
+| :--- | :--- | :--- |
+| **FW-Fortigate** | Firewall / VPN Peer A (`192.168.0.251`) | FortiOS `v6.2.3` |
+| **FW-PaloAlto** | Firewall / VPN Peer B (`192.168.0.252`) | PAN-OS `10.0.0` |
+| **SWITCH_AUTOMATIZADO** | Switch de Acesso L2 (`192.168.0.248`) | Cisco IOL `i86bi_linux_l2_ipbasek9-ms.high_iron_aug9_2017b.bin` |
+| **SW-01 / SW-02** | Comutação LAN Interna (Sites A e B) | Cisco IOL `i86bi_linux_l2_ipbasek9-ms.high_iron_aug9_2017b.bin` |
+| **2x VPCS** | Endpoints de Teste DHCP / Ping (LANs) | Virtual PC Simulator (VPCS) |
+
+### 🧪 Topologia Pronta para Importação (PNETLab / EVE-NG)
+
+O pacote exportado do laboratório utilizado neste projeto está disponível para importação direta no **PNETLab**:
+
+- 📦 **[Download da Topologia PNETLab (`netops-automation-lab.zip`)](docs/laboratorio/netops-automation-lab.zip)**
+
+> **Nota:** No PNETLab, utilize a opção **Import** selecionando o arquivo `.zip` acima. Após importar, certifique-se de associar as imagens listadas na tabela e conectar a nuvem de gerência (*Cloud0 / Management*) à rede `192.168.0.0/24`.
