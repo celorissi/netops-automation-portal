@@ -42,7 +42,7 @@ chmod +x start.sh
 ./start.sh
 ```
 
-O portal estará acessível em: `http://<IP_DO_RASPBERRY>:5000`
+O portal estará acessível em: `http://<IP_DO_SERVER>:5000`
 
 ---
 
