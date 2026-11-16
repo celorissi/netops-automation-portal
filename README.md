@@ -39,7 +39,7 @@ Portal web e esteira de automação desenvolvidos em **Python**, **Flask** e **W
 <p align="center">
   <img src="docs/images/topologia.png" alt="Topologia do Projeto" width="450px">
 </p>
----
+
 
 ## 🚀 Como Executar Localmente
 
