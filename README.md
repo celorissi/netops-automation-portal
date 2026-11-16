@@ -19,6 +19,10 @@ Portal web e esteira de automação desenvolvidos em **Python**, **Flask** e **W
 
   🎬 **[Parte 1 — Automação de Switches Cisco & Backups (MP4)](docs/videos/parte1-cisco-switches.mp4)**
 
+
+https://github.com/user-attachments/assets/2cb368a3-2bd2-464b-8b3b-aef72503fd1c
+
+
 - **Parte 2 — Automação de Túneis VPN IPsec / IKEv2 (Multi-Vendor):** Esteira completa de provisionamento de infraestrutura LAN, deploy de túneis VPN IPsec *Route-Based*, rollback transacional ordenado, validação de conectividade (*Control Plane* e *Data Plane*) e backup automatizado para firewalls **FortiGate (FortiOS)** e **Palo Alto (PAN-OS)**.
 - **Console em Tempo Real:** Streaming bidirecional de logs via `Flask-SocketIO` e `Gevent`, permitindo monitorar cada comando SSH e capturar saídas de execução instantaneamente no navegador.
 
