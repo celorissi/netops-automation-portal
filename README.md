@@ -79,17 +79,6 @@ python 2.7.backup_fortigate.py
 
 ---
 
-## 🎥 Demonstração em Vídeo
-
-<!-- Para player nativo do GitHub: edite este arquivo no navegador e arraste o arquivo .mp4 para a linha abaixo -->
-<!-- https://github.com/user-attachments/assets/SEU-ASSET-ID -->
-
-[![Assistir Demonstração Completa](https://img.youtube.com/vi/SEU_ID_DO_VIDEO/maxresdefault.jpg)](https://www.youtube.com/watch?v=SEU_ID_DO_VIDEO)
-
-- **Parte 1 (Cisco Switches & Backups):** Provisionamento de Hostname, criação de VLANs (`10`, `20`, `50`), backup automático/manual com limite de 20 arquivos e rollback.
-- **Parte 2 (FortiGate & Palo Alto VPN IPsec):** Orquestração de túneis IPsec multi-vendor, políticas de segurança, rotas estáticas, validação de conectividade e backups automatizados.
-
----
 
 ## 📂 Estrutura do Repositório
 
