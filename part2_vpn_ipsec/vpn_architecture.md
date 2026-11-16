@@ -1,4 +1,4 @@
-# Arquitetura e Plano de Automação — VPN IPsec Site-to-Site (Palo Alto $\leftrightarrow$ FortiGate)
+# Arquitetura e Plano de Automação — VPN IPsec Site-to-Site (Palo Alto e FortiGate)
 
 ## 1. Visão Geral e Objetivo
 
