@@ -38,7 +38,7 @@ Portal web e esteira de automação desenvolvidos em **Python**, **Flask** e **W
 - **Infraestrutura:** Ambiente virtualizado conectado à rede de gerência *Out-of-Band* `192.168.0.0/24`
 
 <p align="center">
-  <img src="docs/images/topologia.png" alt="Topologia do Projeto" width="650px">
+  <img src="docs/images/topologia.png" alt="Topologia do Projeto" width="450px">
 </p>
 ---
 
