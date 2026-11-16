@@ -88,4 +88,3 @@ O portal estará acessível em: `http://<IP_DO_SERVER>:5000`
 
 ---
 
-> Desenvolvido para o desafio técnico de infraestrutura e automação de redes.
