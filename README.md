@@ -1,10 +1,6 @@
 # 🚀 NetOps Automation Portal
 
 <p align="center">
-  <img src="docs/images/topologia-homelab.png" alt="Topologia do Homelab" width="100%">
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python Version">
   <img src="https://img.shields.io/badge/Flask-SocketIO-green.svg" alt="Flask SocketIO">
   <img src="https://img.shields.io/badge/Netmiko%20%7C%20Paramiko-Network%20Automation-orange.svg" alt="Netmiko & Paramiko">
