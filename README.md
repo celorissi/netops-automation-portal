@@ -89,8 +89,18 @@ python 2.7.backup_fortigate.py
 https://github.com/user-attachments/assets/965a2d18-5b0e-4d5b-9cd1-cc743f71bd7a
 
 
-
 - **Parte 2 (FortiGate & Palo Alto VPN IPsec):** Orquestração de túneis IPsec multi-vendor, políticas de segurança, rotas estáticas, validação de conectividade e backups automatizados.
+
+#### Configuração (Deploy)
+https://github.com/user-attachments/assets/e022e8fa-9a7f-4285-8938-bd49c634a7b8
+
+#### Rollback 
+
+https://github.com/user-attachments/assets/d4980b07-02cc-4ac3-930a-21473d7a194c
+
+
+
+
 
 
 ---
