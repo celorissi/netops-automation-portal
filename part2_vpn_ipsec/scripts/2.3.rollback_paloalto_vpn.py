@@ -13,7 +13,7 @@ PA_USER = "admin"
 PA_PASS = "Admin@123"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DELETE_FILE = os.path.abspath(os.path.join(BASE_DIR, "../config/2.3.delete_palo_alto.cfg"))
+DELETE_FILE = os.path.abspath(os.path.join(BASE_DIR, "../config/2.3.delete_palo_alto_vpn.cfg"))
 
 
 def rollback_paloalto(host=PA_HOST, username=PA_USER, password=PA_PASS, log_callback=None):
@@ -23,13 +23,19 @@ def rollback_paloalto(host=PA_HOST, username=PA_USER, password=PA_PASS, log_call
         else:
             tqdm.write(msg)
 
-    if not os.path.exists(DELETE_FILE):
-        err = f"Arquivo de delete não encontrado: {DELETE_FILE}"
-        log(f"❌ {err}")
-        return False, err
+    # Fallback para o nome antigo caso ainda não tenha sido renomeado
+    target_file = DELETE_FILE
+    if not os.path.exists(target_file):
+        alt_file = os.path.abspath(os.path.join(BASE_DIR, "../config/2.3.delete_palo_alto.cfg"))
+        if os.path.exists(alt_file):
+            target_file = alt_file
+        else:
+            err = f"Arquivo de delete não encontrado: {DELETE_FILE}"
+            log(f"❌ {err}")
+            return False, err
 
     commands = ["configure"]
-    with open(DELETE_FILE, "r", encoding="utf-8") as f:
+    with open(target_file, "r", encoding="utf-8") as f:
         for line in f:
             stripped = line.strip()
             if stripped and not stripped.startswith("#"):
@@ -39,7 +45,7 @@ def rollback_paloalto(host=PA_HOST, username=PA_USER, password=PA_PASS, log_call
     if not any("commit" in c.lower() for c in commands):
         commands.append("commit")
 
-    total_steps = len(commands) + 1
+    total_steps = 3
     log(f"\n⏪ Iniciando Rollback VPN no Palo Alto ({host})...\n")
 
     try:
@@ -50,23 +56,24 @@ def rollback_paloalto(host=PA_HOST, username=PA_USER, password=PA_PASS, log_call
                 host=host,
                 username=username,
                 password=password,
-                timeout=40,
+                timeout=60,
             )
             pbar.update(1)
 
-            for cmd in commands:
-                pbar.set_postfix_str(f"CLI: {cmd[:32]}...")
-                log(f"  >>> {cmd}")
-                output = net_connect.send_config_set([cmd], cmd_verify=False)
-                if output.strip():
-                    for out_line in output.splitlines():
-                        if out_line.strip():
-                            log(f"      {out_line.strip()}")
-                pbar.update(1)
+            pbar.set_postfix_str(f"Removendo em lote ({len(commands)} cmds)...")
+            log("  [*] Executando lote de remoção VPN e commit no Palo Alto...")
+            output = net_connect.send_config_set(commands, cmd_verify=False, read_timeout=120)
+            if output.strip():
+                for out_line in output.splitlines():
+                    if out_line.strip():
+                        log(f"      {out_line.strip()}")
+            pbar.update(1)
 
+            pbar.set_postfix_str("Finalizando...")
+            net_connect.disconnect()
+            pbar.update(1)
             pbar.set_postfix_str("Concluído!")
 
-        net_connect.disconnect()
         log("\n✅ Rollback e commit do Palo Alto executados com sucesso!\n")
         return True, ""
     except Exception as e:

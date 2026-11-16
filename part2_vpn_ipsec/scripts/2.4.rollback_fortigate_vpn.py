@@ -28,14 +28,17 @@ def rollback_fortigate(host=FGT_HOST, username=FGT_USER, password=FGT_PASS, log_
         log(f"❌ {err}")
         return False, err
 
-    commands = []
     with open(DELETE_FILE, "r", encoding="utf-8") as f:
-        for line in f:
-            stripped = line.strip()
-            if stripped and not stripped.startswith("#"):
-                commands.append(stripped)
+        # Filtra linhas vazias, comentários e bloqueia 'purge' interativo para não travar o buffer
+        commands = [
+            line.strip()
+            for line in f
+            if line.strip()
+            and not line.strip().startswith("#")
+            and line.strip().lower() != "purge"
+        ]
 
-    total_steps = len(commands) + 1
+    total_steps = 3
     log(f"\n⏪ Iniciando Rollback VPN no FortiGate ({host})...\n")
 
     try:
@@ -47,23 +50,28 @@ def rollback_fortigate(host=FGT_HOST, username=FGT_USER, password=FGT_PASS, log_
                 username=username,
                 password=password,
                 timeout=30,
+                fast_cli=False,  # Garante leitura síncrona dos prompts do FortiOS
             )
             pbar.update(1)
 
-            for cmd in commands:
-                pbar.set_postfix_str(f"CLI: {cmd[:32]}...")
-                log(f"  >>> {cmd}")
-                output = net_connect.send_config_set([cmd])
-                if output.strip() and not output.strip().endswith("#"):
-                    for out_line in output.splitlines():
-                        if out_line.strip():
-                            log(f"      {out_line.strip()}")
-                pbar.update(1)
+            pbar.set_postfix_str(f"Removendo em lote ({len(commands)} cmds)...")
+            log("  [*] Executando lote de remoção VPN no FortiGate...")
+            output = net_connect.send_config_set(
+                commands,
+                enter_config_mode=False,
+                exit_config_mode=False,
+                cmd_verify=False,
+            )
+            if output.strip():
+                log(f"      {output.strip()}")
+            pbar.update(1)
 
+            pbar.set_postfix_str("Finalizando...")
+            net_connect.disconnect()
+            pbar.update(1)
             pbar.set_postfix_str("Concluído!")
 
-        net_connect.disconnect()
-        log("\n✅ Rollback do FortiGate executado com sucesso!\n")
+        log("\n✅ Rollback VPN do FortiGate executado com sucesso!\n")
         return True, ""
     except Exception as e:
         err = f"Erro no rollback do FortiGate: {str(e)}"
