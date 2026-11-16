@@ -18,6 +18,7 @@ Portal web e esteira de automação desenvolvidos em **Python**, **Flask** e **W
 - **Parte 1 — Automação de Switches Cisco:** Provisionamento dinâmico de Hostname, criação de VLANs padronizadas (`10 - VLAN_DADOS`, `20 - VLAN_VOZ`, `50 - VLAN_SEGURANÇA`), validações pós-deploy e sistema automatizado de backup da `running-config` com retenção estrita de até **20 arquivos `.cfg`** (com opção de limpeza manual e download).
 
 
+
 - **Parte 2 — Automação de Túneis VPN IPsec / IKEv2 (Multi-Vendor):** Esteira completa de provisionamento de infraestrutura LAN, deploy de túneis VPN IPsec *Route-Based*, rollback transacional ordenado, validação de conectividade (*Control Plane* e *Data Plane*) e backup automatizado para firewalls **FortiGate (FortiOS)** e **Palo Alto (PAN-OS)**.
 - **Console em Tempo Real:** Streaming bidirecional de logs via `Flask-SocketIO` e `Gevent`, permitindo monitorar cada comando SSH e capturar saídas de execução instantaneamente no navegador.
 
@@ -82,10 +83,15 @@ python 2.7.backup_fortigate.py
 <!-- Para player nativo do GitHub: edite este arquivo no navegador e arraste o arquivo .mp4 para a linha abaixo -->
 <!-- https://github.com/user-attachments/assets/SEU-ASSET-ID -->
 
-[![Assistir Demonstração Completa](https://img.youtube.com/vi/SEU_ID_DO_VIDEO/maxresdefault.jpg)](https://www.youtube.com/watch?v=SEU_ID_DO_VIDEO)
-
 - **Parte 1 (Cisco Switches & Backups):** Provisionamento de Hostname, criação de VLANs (`10`, `20`, `50`), backup automático/manual com limite de 20 arquivos e rollback.
+
+
+https://github.com/user-attachments/assets/965a2d18-5b0e-4d5b-9cd1-cc743f71bd7a
+
+
+
 - **Parte 2 (FortiGate & Palo Alto VPN IPsec):** Orquestração de túneis IPsec multi-vendor, políticas de segurança, rotas estáticas, validação de conectividade e backups automatizados.
+
 
 ---
 
